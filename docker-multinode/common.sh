@@ -149,7 +149,7 @@ kube::multinode::start_flannel() {
     --privileged \
     -v /dev/net:/dev/net \
     -v ${FLANNEL_SUBNET_DIR}:${FLANNEL_SUBNET_DIR} \
-    quay.io/coreos/flannel:${FLANNEL_VERSION}-${ARCH} \
+    quay.io/coreos/flannel:v${FLANNEL_VERSION}-${ARCH} \
     /opt/bin/flanneld \
       --etcd-endpoints=http://${EXTERNAL_ETCD}:2379 \
       --ip-masq="${FLANNEL_IPMASQ}" \

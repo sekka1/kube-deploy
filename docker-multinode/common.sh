@@ -196,6 +196,32 @@ kube::multinode::start_k8s_master() {
       --v=2
 }
 
+# Start kubelet first and then the master components as pods
+kube::multinode::start_k8s_master_external_etcd() {
+  kube::log::status "Launching Kubernetes master components..."
+
+  kube::multinode::make_shared_kubelet_dir
+
+  docker run -d \
+    --net=host \
+    --pid=host \
+    --privileged \
+    --restart=${RESTART_POLICY} \
+    --name kube_kubelet_$(kube::helpers::small_sha) \
+    ${KUBELET_MOUNTS} \
+    gcr.io/google_containers/hyperkube-${ARCH}:${K8S_VERSION} \
+    /hyperkube kubelet \
+      --etcd-servers=http://${EXTERNAL_ETCD}:2379 \
+      --allow-privileged \
+      --api-servers=http://localhost:8080 \
+      --config=/etc/kubernetes/manifests-multi \
+      --cluster-dns=10.0.0.10 \
+      --cluster-domain=cluster.local \
+      ${CNI_ARGS} \
+      --hostname-override=${IP_ADDRESS} \
+      --v=2
+}
+
 # Start kubelet in a container, for a worker node
 kube::multinode::start_k8s_worker() {
   kube::log::status "Launching Kubernetes worker components..."

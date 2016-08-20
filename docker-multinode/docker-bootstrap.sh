@@ -50,6 +50,8 @@ kube::bootstrap::restart_docker(){
 
   if kube::helpers::command_exists systemctl; then
     kube::bootstrap::restart_docker_systemd
+  if kube::helpers:is_coreos; then
+    kube::bootstrap::restart_docker_systemd_coreos
   elif kube::helpers::command_exists yum; then
     DOCKER_CONF="/etc/sysconfig/docker"
     kube::helpers::backup_file ${DOCKER_CONF}
@@ -66,7 +68,7 @@ kube::bootstrap::restart_docker(){
   elif kube::helpers::command_exists apt-get; then
     DOCKER_CONF="/etc/default/docker"
     kube::helpers::backup_file ${DOCKER_CONF}
-        
+
     # Is there an uncommented DOCKER_OPTS line at all?
     if [[ -z $(grep "DOCKER_OPTS" $DOCKER_CONF | grep -v "#") ]]; then
       echo "DOCKER_OPTS=\"--mtu=${FLANNEL_MTU} --bip=${FLANNEL_SUBNET} \"" >> ${DOCKER_CONF}
@@ -88,6 +90,19 @@ kube::bootstrap::restart_docker(){
   kube::log::status "Restarted docker with the new flannel settings"
 }
 
+kube::helpers:is_coreos(){
+
+  if [ -a /etc/os-release ]; then
+    COREOS_RELEASE=$(cat /etc/os-release | grep -o -m 1 CoreOS)
+    if [ -n ${COREOS_RELEASE} ]; then
+      return true
+    fi
+  fi
+
+  return false
+
+}
+
 # Replace --mtu and --bip in systemd's docker.service file and restart
 kube::bootstrap::restart_docker_systemd(){
 
@@ -98,6 +113,21 @@ kube::bootstrap::restart_docker_systemd(){
   kube::multinode::delete_bridge docker0
 
   sed -i.bak 's/^\(MountFlags=\).*/\1shared/' ${DOCKER_CONF}
+  systemctl daemon-reload
+  systemctl restart docker
+}
+
+# For CoreOS system add a drop in for Docker
+# --mtu and --bip in systemd's docker.service file and restart
+# The main docker.service file is read only
+kube::bootstrap::restart_docker_systemd_coreos(){
+
+  echo "[Service]" >> /etc/systemd/system/docker.service.d/10-docker-options.conf
+  echo "MountFlags=shared" >> /etc/systemd/system/docker.service.d/10-docker-options.conf
+  echo "Environment=\"DOCKER_OPTS=--mtu=${FLANNEL_MTU} --bip=${FLANNEL_SUBNET}\"" >> /etc/systemd/system/docker.service.d/10-docker-options.conf
+
+  kube::multinode::delete_bridge docker0
+
   systemctl daemon-reload
   systemctl restart docker
 }

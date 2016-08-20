@@ -48,10 +48,10 @@ kube::bootstrap::restart_docker(){
 
   kube::log::status "Restarting main docker daemon..."
 
-  if kube::helpers::command_exists systemctl; then
-    kube::bootstrap::restart_docker_systemd
   if kube::helpers:is_coreos; then
     kube::bootstrap::restart_docker_systemd_coreos
+  elif kube::helpers::command_exists systemctl; then
+    kube::bootstrap::restart_docker_systemd
   elif kube::helpers::command_exists yum; then
     DOCKER_CONF="/etc/sysconfig/docker"
     kube::helpers::backup_file ${DOCKER_CONF}
@@ -95,11 +95,11 @@ kube::helpers:is_coreos(){
   if [ -a /etc/os-release ]; then
     COREOS_RELEASE=$(cat /etc/os-release | grep -o -m 1 CoreOS)
     if [ -n ${COREOS_RELEASE} ]; then
-      return true
+      return 0
     fi
   fi
 
-  return false
+  return 1
 
 }
 
@@ -122,6 +122,7 @@ kube::bootstrap::restart_docker_systemd(){
 # The main docker.service file is read only
 kube::bootstrap::restart_docker_systemd_coreos(){
 
+  mkdir /etc/systemd/system/docker.service.d
   echo "[Service]" >> /etc/systemd/system/docker.service.d/10-docker-options.conf
   echo "MountFlags=shared" >> /etc/systemd/system/docker.service.d/10-docker-options.conf
   echo "Environment=\"DOCKER_OPTS=--mtu=${FLANNEL_MTU} --bip=${FLANNEL_SUBNET}\"" >> /etc/systemd/system/docker.service.d/10-docker-options.conf

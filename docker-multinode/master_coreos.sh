@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # Copyright 2016 The Kubernetes Authors All rights reserved.
 #
@@ -35,7 +35,7 @@ if [[ ${USE_CNI} == "true" ]]; then
 else
   kube::bootstrap::bootstrap_daemon
 
-  kube::multinode::start_etcd
+  #kube::multinode::start_etcd
 
   kube::multinode::start_flannel
 

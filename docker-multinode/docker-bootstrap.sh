@@ -90,6 +90,7 @@ kube::bootstrap::restart_docker(){
   kube::log::status "Restarted docker with the new flannel settings"
 }
 
+# Detect if this node is a CoreOS node
 kube::helpers:is_coreos(){
 
   if [ -a /etc/os-release ]; then

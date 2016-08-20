@@ -124,6 +124,7 @@ kube::bootstrap::restart_docker_systemd(){
 kube::bootstrap::restart_docker_systemd_coreos(){
 
   mkdir /etc/systemd/system/docker.service.d
+  rm /etc/systemd/system/docker.service.d/10-docker-options.conf
   echo "[Service]" >> /etc/systemd/system/docker.service.d/10-docker-options.conf
   echo "MountFlags=shared" >> /etc/systemd/system/docker.service.d/10-docker-options.conf
   echo "Environment=\"DOCKER_OPTS=--mtu=${FLANNEL_MTU} --bip=${FLANNEL_SUBNET}\"" >> /etc/systemd/system/docker.service.d/10-docker-options.conf

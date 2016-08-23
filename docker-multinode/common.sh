@@ -299,8 +299,15 @@ kube::multinode::delete_bridge() {
 # Make shared kubelet directory
 kube::multinode::make_shared_kubelet_dir() {
 
+  # Make shared dir on CoreOS
+  if kube::helpers:is_coreos; then
+    mkdir -p /var/lib/kubelet
+    mount --bind /var/lib/kubelet /var/lib/kubelet
+    mount --make-shared /var/lib/kubelet
+
+    kube::log::status "Mounted /var/lib/kubelet with shared propagnation"
   # This only has to be done when the host doesn't use systemd
-  if ! kube::helpers::command_exists systemctl; then
+  elif ! kube::helpers::command_exists systemctl; then
     mkdir -p /var/lib/kubelet
     mount --bind /var/lib/kubelet /var/lib/kubelet
     mount --make-shared /var/lib/kubelet

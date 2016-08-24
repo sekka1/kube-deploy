@@ -68,10 +68,8 @@ kube::multinode::main(){
     -v /run:/run:rw \
     -v /var/lib/docker:/var/lib/docker:rw \
     -v /var/lib/kubelet:/var/lib/kubelet:shared \
-    -v /var/log/containers:/var/log/containers:rw"
-    #
-    # Mounting master-multi.json file with --cloud-provider=aws switch
-    #-v /home/core/kube-deploy/docker-multinode/files/master-multi.json:/etc/kubernetes/manifests-multi/master-multi.json"
+    -v /var/log/containers:/var/log/containers:rw \
+    -v /home/core/kube-deploy/docker-multinode/files/master-multi.json:/etc/kubernetes/manifests-multi/master-multi.json"
 
   # Paths
   FLANNEL_SUBNET_DIR=${FLANNEL_SUBNET_DIR:-/run/flannel}

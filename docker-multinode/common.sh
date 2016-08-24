@@ -223,7 +223,7 @@ kube::multinode::start_k8s_worker() {
       --cloud-provider=aws \
       ${CNI_ARGS} \
       --hostname-override=${IP_ADDRESS} \
-      --v=2
+      --v=7
 }
 
 # Start kube-proxy in a container, for a worker node
